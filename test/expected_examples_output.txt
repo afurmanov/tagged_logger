@@ -1,0 +1,39 @@
+
+<<<CHANGING_FORMAT>>> 
+info-Object: message
+
+<<<ONE_LOG_PER_CLASSES>>> 
+- Only logging from within classes Ftp, Http and Sockets will be shown in output (no LogFoo):
+Network::Ftp#foo
+Network::Http#foo
+Network::Sockets#foo
+
+- Same result, but regex syntax:
+Network::Ftp#foo
+Network::Http#foo
+Network::Sockets#foo
+
+- Or even shorter:
+Network::Ftp#foo
+Network::Http#foo
+Network::Sockets#foo
+
+<<<ONE_TAG_PER_CLASSES>>> 
+- Only logging from within classes Ftp, Http and Sockets will be shown in output (no LogFoo)
+  tag is also printed and it is 'Network' after renaming took place:
+Network: Ftp#foo
+Network: Http#foo
+Network: Sockets#foo
+
+<<<PER_CLASS_CUSTOMIZATION>>> 
+- Only logging for Some class is shown in STDOUT
+- Run this script again by adding '2>/dev/null' and see the difference:
+Some: Some information
+
+<<<RULE_WITH_REGEX>>> 
+- The recommended way to specify logging for all classes within same namespace:
+foo
+
+<<<SIMPLEST_USAGE>>> 
+INFO message
+WARNING message
