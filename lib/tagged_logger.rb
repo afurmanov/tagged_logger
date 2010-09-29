@@ -14,7 +14,7 @@ class TaggedLogger
     end
     
     def rules(&block)
-      add_logger_generator_in_Kernel
+      add_logger_generator_in_Object
       instance_eval(&block)
     end
     
@@ -119,9 +119,9 @@ class TaggedLogger
       end
     end
     
-    def add_logger_generator_in_Kernel
-      return if Kernel.respond_to?(:logger, true) #no harm
-      Kernel.class_eval do
+    def add_logger_generator_in_Object
+      return if Object.respond_to?(:logger, true) #no harm
+      Object.class_eval do
         def logger
           klass = self.class == Class ? self : self.class
           result = klass.class_eval do

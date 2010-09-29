@@ -24,13 +24,14 @@ class TaggedLoggerTest < Test::Unit::TestCase
     end
     
     teardown do
-      Kernel.class_eval { remove_method :logger }
+      Object.class_eval { remove_method :logger }
     end
     
     should "be able to intialize with minimal effort, without defining any rules" do
       TaggedLogger.init
       dont_allow(@@stub_out).write
-      assert Class.new.methods.include? "logger"
+      logger_method = RUBY_VERSION >= '1.9' ? :logger : "logger"
+      assert Class.new.methods.include? logger_method
       assert_nothing_raised { Class.new.logger }
     end
     
