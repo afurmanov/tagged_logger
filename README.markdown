@@ -9,7 +9,8 @@ Every time you want to log something, simply write:
 and do not worry about what kind of logger you use and how your code accesses it.
 You may configure these things later, one day writing to STDOUT works for you, another
 day you'll need something more sophisticated, like several log files each serving 
-different components and for different audience. 
+different components and for different audience. [Here](http://afurmanov.com/2009/10/19/tagged-logger-introduction)
+I have described in more details why I created it.
 
 ## Installation
     $ gem install tagged_logger
