@@ -1,11 +1,18 @@
-* :fsync option after :to => Logger.... or similar, otherwise it is getting annoying to write:
+- must be able to override already existing #logger with proper DSl
+- logger.debug method (and alike) should accept block for performance reason
+- writing messages in any encoding
+- test against 'logging' framework
+- test with Rails
+- when logger specified in :to => ... then lib must complain unless formatting and logging code to that specific logger class was not defined
+
+- :fsync option after :to => Logger.... or similar, otherwise it is getting annoying to write:
   log = open(File.join(log_path, 'log.log'),"w")
   debug GData::Cacher, :to => Logger.new(log) do
     log.fsync
   end
 
 
-* figure out how profiling info could be displayed on New Relic
+- figure out how profiling info could be displayed on New Relic
   May be:
 
   instrument object, :method
@@ -32,11 +39,3 @@
   
   The NewRelicLogger simply redirects all sampling to newrelic_rpm
 
-- must be able to override already existing #logger with proper DSl
-- logger.debug method (and alike) should accept block for performance reason
-- writing messages in any encoding
-- test against 'logging' framework
-- test agains 1.9.1
-- test agains 1.8.6 (really?)
-- test with Rails
-- when logger specified in :to => ... then lib must complain unless formatting and logging code to that specific logger class was not defined

@@ -12,7 +12,7 @@ day you'll need something more sophisticated, like several log files each servin
 different components and for different audience. 
 
 ## Installation
-    $ sudo gem install tagged_logger
+    $ gem install tagged_logger
 
 ## Usage
 
