@@ -35,6 +35,34 @@ class TaggedLoggerTest < Test::Unit::TestCase
       assert_nothing_raised { Class.new.logger }
     end
     
+    should "not override exsiting #logger method" do
+      GlobalObject1 = Object
+      GlobalObject1.instance_eval { define_method(:logger){@@stub_out}}
+      class GlobalObject1
+        def foo; logger.write("debug"); end
+      end
+      TaggedLogger.rules do
+        reset
+        debug(/.*/) { |level, tag, msg| debugger; @@stub_out.write("hmmm, something new") }
+      end
+      mock(@@stub_out).write("debug")
+      Object.new.foo
+    end
+
+    should "override exsiting #logger method when intialized with :override" do
+      GlobalObject2 = Object
+      class GlobalObject2
+        def logger; @logger ||= Logger.new('/dev/null');  end
+        def foo; logger.debug("debug"); end
+      end
+      TaggedLogger.rules(:override => true) do
+        reset
+        debug(/.*/) { |level, tag, msg| @@stub_out.write(msg) }
+      end
+      mock(@@stub_out).write("debug")
+      Object.new.foo
+    end
+    
     context "everything gets logged to @@stub_out;" do
       setup do 
         TaggedLogger.rules do

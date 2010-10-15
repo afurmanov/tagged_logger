@@ -13,8 +13,13 @@ class TaggedLogger
       init
     end
     
-    def rules(&block)
-      add_logger_generator_in_Object
+    def rules(options = {}, &block)
+      klasses = []
+      klasses << AbstractController::Base if Object.const_defined? :AbstractController
+      klasses << Object
+      override = options.delete :override
+      klasses = klasses.select{ |klass| !klass.respond_to?(:logger, true)}  if !override
+      klasses.each{ |klass| inject_logger_method_in_call_chain(klass)}
       instance_eval(&block)
     end
     
@@ -119,9 +124,8 @@ class TaggedLogger
       end
     end
     
-    def add_logger_generator_in_Object
-      return if Object.respond_to?(:logger, true) #no harm
-      Object.class_eval do
+    def inject_logger_method_in_call_chain(definee_klass)
+      definee_klass.class_eval do
         def logger
           klass = self.class == Class ? self : self.class
           result = klass.class_eval do
