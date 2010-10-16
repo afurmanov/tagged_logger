@@ -1,5 +1,5 @@
 require 'delegate'
-require 'facets/dictionary'
+require 'hashery/dictionary'
 
 class TaggedLogger
   @rename_rules = Dictionary.new
