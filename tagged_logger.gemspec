@@ -15,6 +15,6 @@ Gem::Specification.new do |s|
   s.add_dependency "hashery"
   s.add_development_dependency "shoulda"
   s.add_development_dependency "rr"
-  s.files = Dir["[A-Z]*", "{lib,test,examples}/**/*"]
+  s.files = Dir["[A-Z]*", "tagged_logger.rb", "{lib,test,examples}/**/*"]
 end
 
