@@ -15,7 +15,7 @@ class TaggedLogger
     
     def rules(options = {}, &block)
       klasses = []
-      klasses << AbstractController::Base if Object.const_defined? :AbstractController
+#      klasses << AbstractController::Base if Object.const_defined? :AbstractController
       klasses << Object
       override = options.delete :override
       klasses = klasses.select{ |klass| !klass.respond_to?(:logger, true)}  if !override
