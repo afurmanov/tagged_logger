@@ -1,0 +1,8 @@
+$LOAD_PATH.unshift File.dirname(__FILE__) + '/../'
+require 'rubygems'
+require 'tagged_logger'
+require 'test/unit'
+require 'shoulda'
+require 'logger'
+require 'rr'
+require 'test_log_device'

@@ -14,14 +14,37 @@ class TaggedLogger
     end
     
     def rules(options = {}, &block)
-      klasses = []
-#      klasses << AbstractController::Base if Object.const_defined? :AbstractController
-      klasses << Object
+      @old_methods_restored = false
       override = options.delete :override
+      klasses = overridees
       klasses = klasses.select{ |klass| !klass.respond_to?(:logger, true)}  if !override
       klasses.each{ |klass| inject_logger_method_in_call_chain(klass)}
       instance_eval(&block)
     end
+
+    def klass_has_method?(klass, method)
+      klass.instance_methods(false).include?(RUBY_VERSION >= '1.9' ? method.to_sym : method.to_s)
+    end
+    
+    def restore_old_logger_methods
+      return if @old_methods_restored
+      @old_methods_restored = true
+      overridees.each do |klass|
+        if klass_has_method?(klass, :tagged_logger_original_logger)
+          klass.class_eval {alias_method :logger, :tagged_logger_original_logger}
+        elsif klass_has_method?(klass, :logger)
+          klass.class_eval {remove_method :logger}
+        end
+      end
+    end
+    
+    def overridees
+      klasses = []
+      klasses << ActionController::Base if Object.const_defined? :ActionController
+      klasses << Object
+      klasses
+    end
+    
     
     def blocks_for(level, tag)
       blocks = []
@@ -125,6 +148,10 @@ class TaggedLogger
     end
     
     def inject_logger_method_in_call_chain(definee_klass)
+      if klass_has_method?(definee_klass, :logger)
+        #so we could resurrect old :logger method if we need
+        definee_klass.class_eval { alias_method :tagged_logger_original_logger, :logger }
+      end
       definee_klass.class_eval do
         def logger
           klass = self.class == Class ? self : self.class

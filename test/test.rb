@@ -1,19 +1,6 @@
-require 'rubygems'
-require 'test/unit'
-require 'shoulda'
-require 'logger'
-require 'rr'
+$LOAD_PATH.unshift File.dirname(__FILE__)
+require 'test_helper'
 
-require File.dirname(__FILE__) + '/../tagged_logger'
-
-class TestLogDevice
-  attr_reader :last
-  def write(msg); @last = msg; end
-  def close; end;  
-  def to_s; @last || ""; end
-  def inspect; to_s; end
-  def clear; write(""); end
-end
 
 class TaggedLoggerTest < Test::Unit::TestCase
   include RR::Adapters::TestUnit
@@ -24,7 +11,7 @@ class TaggedLoggerTest < Test::Unit::TestCase
     end
     
     teardown do
-      Object.class_eval { remove_method :logger }
+      TaggedLogger.restore_old_logger_methods
     end
     
     should "be able to intialize with minimal effort, without defining any rules" do
