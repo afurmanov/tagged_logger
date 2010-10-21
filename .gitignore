@@ -4,3 +4,4 @@ Manifest
 README.html
 CHANGES.html
 *.log
+*.gem
