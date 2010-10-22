@@ -30,7 +30,7 @@ class TaggedLoggerTest < Test::Unit::TestCase
       end
       TaggedLogger.rules do
         reset
-        debug(/.*/) { |level, tag, msg| debugger; @@stub_out.write("hmmm, something new") }
+        debug(/.*/) { |level, tag, msg| @@stub_out.write("hmmm, something new") }
       end
       mock(@@stub_out).write("debug")
       Object.new.foo

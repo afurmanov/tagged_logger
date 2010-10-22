@@ -45,7 +45,7 @@ class TaggedLoggerRailsTest < Test::Unit::TestCase
     
     should "be possible to restore old logger methods" do
       TaggedLogger.rules(:override=>true) do 
-        info(/.*/) {|level, tag, message| debugger; stop = 9}
+        info(/.*/) {|level, tag, message|}
       end
       TaggedLogger.restore_old_logger_methods
       mock(Test.rails_log_device).write("hi\n")
