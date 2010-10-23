@@ -57,6 +57,11 @@ module TaggedLogger
     def warn(what, where = {}, &block) output(:warn, what, where, &block) end
     def error(what, where = {}, &block) output(:error, what, where, &block) end
     def fatal(what, where = {}, &block) output(:fatal, what, where, &block) end
+    def any_level(what, where = {}, &block)
+      [:debug, :info, :warn, :error, :fatal].each do |level|
+        output(level, what, where, &block)
+        end
+    end
     
     def format(&block)
       @formatter = block
