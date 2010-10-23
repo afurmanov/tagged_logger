@@ -1,8 +1,11 @@
-$LOAD_PATH.unshift File.dirname(__FILE__) + '/../'
+lib_dir = File.dirname(__FILE__) + '/../lib'
+$LOAD_PATH.unshift lib_dir unless $LOAD_PATH.include? lib_dir
+
 require 'rubygems'
-require 'tagged_logger'
+require "#{lib_dir}/tagged_logger"
+require "#{lib_dir}/../test/test_log_device"
+require 'logger'
 require 'test/unit'
 require 'shoulda'
-require 'logger'
 require 'rr'
-require 'test_log_device'
+

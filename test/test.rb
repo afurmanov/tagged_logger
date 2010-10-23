@@ -1,6 +1,4 @@
-$LOAD_PATH.unshift File.dirname(__FILE__)
-require 'test_helper'
-
+require File.join(File.dirname(__FILE__), '/test_helper')
 
 class TaggedLoggerTest < Test::Unit::TestCase
   include RR::Adapters::TestUnit

@@ -1,6 +1,4 @@
-require 'rubygems'
-require 'tagged_logger'
-require 'logger'
+require File.join(File.dirname(__FILE__), '/examples_helper')
 
 puts "\n<<<#{File.basename(__FILE__, ".rb")}>>> \n".upcase
 
