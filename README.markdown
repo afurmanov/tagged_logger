@@ -118,6 +118,11 @@ There is more general form for rules, it accepts block with three params:
 As previously explained the *tag* is a class name the *#logger* is being called from (except when you override Rails instrumentation, see below)
 
 ## Integration with Rails (only Rails 3.0 supported at the moment, not completely tested):
+
+Installation:
+
+    $ gem install tagged_logger
+
 Rails has two facility for logging - *#logger* method injected in base classes such in ActiveRecord::Base and instrumentation. Instrumentation is somewhat which allows to issue an event upon execution of 
 block, for example:
 
