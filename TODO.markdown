@@ -1,26 +1,6 @@
-### The *level* param in rule below appears to be obsolete:
-
-    debug /something/ do |level, tag, msg| 
-    end
-
-We specify *debug* rule, so what the need to pass it as a param? May be:
-
-    any_level /something/ do |level, tag, msg| 
-    end
-
-and
-  
-    debug /something/ do |tag, msg|
-    end
-
-
-
-### Integration with Rails instrumenation, may be somewhat like:
-
-    debug 'sql.active_record' do |msg| do
-      # custom handling for Rails 'sql.active_record' instrumentation
-    end
-
+### ActiveResource::LogSubscriber instrumentation
+### Tests for Rails instrumentation
+### Refactor TagMatcher#match? with ===
 ### Documentation
 
 ### Ability to accept blocks as arguments for #debug, #info, and alike, i.e.:

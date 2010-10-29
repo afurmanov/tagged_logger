@@ -132,10 +132,10 @@ module TaggedLogger
       TagMatcher.new(tag, level)
     end
     
-    def tag_aliases(tag, &block)
+    def tag_aliases(tag)
       current_name = tag
       @rename_rules.each { |from, to| current_name = to if from.match?(tag) }
-      block.call(current_name)
+      yield current_name
     end
     
     def tag_blocks(level, tag, &block)
