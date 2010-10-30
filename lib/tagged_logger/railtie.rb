@@ -20,6 +20,11 @@ if defined?(Rails::Railtie)
         TaggedLogger.patch_logger(ActionView::LogSubscriber, TaggedLogger.options[:replace_existing_logger]).
           rename [ActionView::LogSubscriber] => "action_view.logsubscriber"
       end
+      ActiveSupport.on_load(:after_initialize) do
+        TaggedLogger.patch_logger(Rails::Rack::Logger, TaggedLogger.options[:replace_existing_logger]).
+          rename [Rails::Rack::Logger] => "rack.logsubscriber"
+      end
+      
     end
   end
 end
