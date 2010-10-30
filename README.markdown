@@ -127,8 +127,9 @@ In Rails.root/config/application.rb:
 
        TaggedLogger.config(:replace_existing_logger => true)
 
-Without that original methods *ActionController::Base#logger*, *ActiveRecord::Base#logger* and alike will remain untouched, and they have to be patched if we want
-redefine their behavior. 
+Without that original methods *ActionController::Base#logger*, *ActiveRecord::Base#logger* and alike will remain untouched, 
+and they have to be patched if we want to redefine their behavior. By default *TaggedLogger* is safe and it 
+does not patch existing *#logger()* method.
 
 ### Logging in Rails
 
@@ -151,12 +152,12 @@ The event *"sendfile.action_controller"* will be signaled after actual work on s
 ### Overriding Rails logging
 Logging inside Rails is done by log subscribers - their task to subscribe to instrumentation events, receive and log them.
 *TaggedLogger* allows you to override how these subscribers work, for example, 
-you could redirect what is being logged in *ActionController* to some external logging service, like [Logworm](http://www.logworm.com/):
+you could redirect what is being logged in *ActionController* to some external hosted log service, like [Logbook.me](http://logbook.me/):
 
     # In Rails.root/config/initializers/tagged_logger.rb:
     TaggedLogger.rules do
       debug "action_controller.logsubscriber" do |level, tag, msg|
-        Logworm::Logger.log(:controllers, :level => level.to_s, :tag => tag.to_s, :message => msg.to_s )
+          Logbook.send(level, tag.to_s, :msg => msg.to_s )
       end
     end
 
@@ -168,8 +169,9 @@ rule with regular expression:
       #your special logging
     end
 
-
-You also could use *#logger* in your classes inherited from Rails bases and define your own logging rules, for example:
+Rails classes having method *#logger()* are patched by *tagged_logger* (only if it is configured 
+with option :replace_existing_logger => true, of cause), so you may define rules for your controllers and models, 
+for example:
 
     class ApplicationController < ActionController::Base
       def welcome
