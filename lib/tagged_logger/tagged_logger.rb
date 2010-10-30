@@ -5,6 +5,7 @@ module TaggedLogger
   @rename_rules = Dictionary.new
   @tag_blocks = Dictionary.new
   @overridees = []
+  @options = {}
 
   class << self
     def reset
