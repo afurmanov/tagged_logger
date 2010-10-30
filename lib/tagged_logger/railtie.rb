@@ -1,24 +1,26 @@
 if defined?(Rails::Railtie)
   module TaggedLogger
     class Railtie < Rails::Railtie
-      ActiveSupport.on_load(:action_controller) do
-        TaggedLogger.send(:inject_logger_method_in_call_chain, ActionController::Base)
-        TaggedLogger.send(:inject_logger_method_in_call_chain, ActionController::LogSubscriber)
-        TaggedLogger.rename [ActionController::LogSubscriber] => "action_controller.instrumentation"
-      end
-      ActiveSupport.on_load(:active_record) do
-        TaggedLogger.send(:inject_logger_method_in_call_chain, ActiveRecord::Base)
-        TaggedLogger.send(:inject_logger_method_in_call_chain, ActiveRecord::LogSubscriber)
-        TaggedLogger.rename [ActiveRecord::LogSubscriber] => "active_record.instrumentation"
-      end
-      ActiveSupport.on_load(:action_mailer) do
-        TaggedLogger.send(:inject_logger_method_in_call_chain, ActionMailer::Base)
-        TaggedLogger.send(:inject_logger_method_in_call_chain, ActionMailer::LogSubscriber)
-        TaggedLogger.rename [ActionMailer::LogSubscriber] => "action_mailer.instrumentation"
-      end
-      ActiveSupport.on_load(:action_view) do
-        TaggedLogger.send(:inject_logger_method_in_call_chain, ActionView::LogSubscriber)
-        TaggedLogger.rename [ActionView::LogSubscriber] => "action_view.instrumentation"
+      if TaggedLogger.options[:replace_existing_logger]
+        ActiveSupport.on_load(:action_controller) do
+          TaggedLogger.patch_logger(ActionController::Base, true).
+            patch_logger(ActionController::LogSubscriber, true).
+            rename [ActionController::LogSubscriber] => "action_controller.logsubscriber"
+        end
+        ActiveSupport.on_load(:active_record) do
+          TaggedLogger.patch_logger(ActiveRecord::Base, true).
+            patch_logger(ActiveRecord::LogSubscriber, true).
+            rename [ActiveRecord::LogSubscriber] => "active_record.logsubscriber"
+        end
+        ActiveSupport.on_load(:action_mailer) do
+          TaggedLogger.patch_logger(ActionMailer::Base, true).
+            patch_logger(ActionMailer::LogSubscriber, true).
+            rename [ActionMailer::LogSubscriber] => "action_mailer.logsubscriber"
+        end
+        ActiveSupport.on_load(:action_view) do
+          TaggedLogger.patch_logger(ActionView::LogSubscriber, true).
+            rename [ActionView::LogSubscriber] => "action_view.logsubscriber"
+        end
       end
     end
   end

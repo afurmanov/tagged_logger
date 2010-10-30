@@ -28,12 +28,13 @@ class TaggedLoggerRailsTest < Test::Unit::TestCase
     end
     
     teardown do
-      TaggedLogger.restore_old_logger_methods
+      TaggedLogger.reset
     end
 
     should "be able possible to initialize in the way to override Rails existing logger" do
       assert TestController.new.respond_to? :logger
-      TaggedLogger.rules(:override=>true) do 
+      TaggedLogger.config(:replace_existing_logger => true)
+      TaggedLogger.rules do 
         info /.*/ do |level, tag, message|
           @@stub_out.write(tag.to_s)
         end
@@ -43,10 +44,11 @@ class TaggedLoggerRailsTest < Test::Unit::TestCase
     end
     
     should "be possible to restore old logger methods" do
-      TaggedLogger.rules(:override=>true) do 
+      TaggedLogger.config(:replace_existing_logger => true)
+      TaggedLogger.rules do 
         info(/.*/) {|level, tag, message|}
       end
-      TaggedLogger.restore_old_logger_methods
+      TaggedLogger.reset
       mock(Test.rails_log_device).write("hi\n")
       TestController.new.hi
     end

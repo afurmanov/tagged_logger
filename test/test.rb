@@ -9,11 +9,11 @@ class TaggedLoggerTest < Test::Unit::TestCase
     end
     
     teardown do
-      TaggedLogger.restore_old_logger_methods
+      TaggedLogger.reset
     end
     
     should "be able to intialize with minimal effort, without defining any rules" do
-      TaggedLogger.init
+      TaggedLogger.rules
       dont_allow(@@stub_out).write
       logger_method = RUBY_VERSION >= '1.9' ? :logger : "logger"
       assert Class.new.methods.include? logger_method
@@ -27,7 +27,6 @@ class TaggedLoggerTest < Test::Unit::TestCase
         def foo; logger.write("debug"); end
       end
       TaggedLogger.rules do
-        reset
         debug(/.*/) { |level, tag, msg| @@stub_out.write("hmmm, something new") }
       end
       mock(@@stub_out).write("debug")
@@ -40,8 +39,8 @@ class TaggedLoggerTest < Test::Unit::TestCase
         def logger; @logger ||= Logger.new('/dev/null');  end
         def foo; logger.debug("debug"); end
       end
-      TaggedLogger.rules(:override => true) do
-        reset
+      TaggedLogger.config(:replace_existing_logger => true)
+      TaggedLogger.rules do
         debug(/.*/) { |level, tag, msg| @@stub_out.write(msg) }
       end
       mock(@@stub_out).write("debug")
@@ -51,7 +50,6 @@ class TaggedLoggerTest < Test::Unit::TestCase
     context "everything gets logged to @@stub_out;" do
       setup do 
         TaggedLogger.rules do
-          reset
           format {|level, tag, msg| "#{tag}: #{msg}"}
           debug /.*/, :to => Logger.new(@@stub_out)
         end

@@ -2,43 +2,59 @@ require 'delegate'
 require 'hashery/dictionary'
 
 module TaggedLogger
+  
   @rename_rules = Dictionary.new
   @tag_blocks = Dictionary.new
-  @overridees = []
-  @options = {}
-
+  @patched = []
+  @formatter = nil
+  @config = {}
+  
   class << self
-    def reset
-      @rename_rules = Dictionary.new
-      @tag_blocks = Dictionary.new
-      ObjectSpace.each_object(ClassSpecificLogger) { |obj| obj.detach }
-      init
+    
+    #Supported options: :replace_existing_logger => true/false
+    def config(options)
+      @config = options
+      self
     end
     
-    def rules(options = {}, &block)
-      @options = options
-      @old_methods_restored = false
-      inject_logger_method_in_call_chain(Object)
-      instance_eval(&block)
+    def options
+      @config
+    end
+    
+    def rules(&block)
+      patch_logger(Object, options[:replace_existing_logger]) unless @patched.include?(Object)
+      instance_eval(&block) if block
+      self
     end
 
+    def reset
+      unpatch_all
+      @rename_rules = Dictionary.new
+      @tag_blocks = Dictionary.new
+      @formatter = nil
+      @config = {}
+      self
+    end
+
+    def init
+      puts "TaggedLogger#init() is deprecated. Use TaggedLogger.rules with no block."
+    end
+    
     def klass_has_method?(klass, method)
       klass.instance_methods(false).include?(RUBY_VERSION >= '1.9' ? method.to_sym : method.to_s)
     end
     
-    def restore_old_logger_methods
-      return if @old_methods_restored
-      @old_methods_restored = true
-      @overridees.each do |klass|
-        if klass_has_method?(klass, :tagged_logger_original_logger)
-          klass.class_eval {alias_method :logger, :tagged_logger_original_logger}
-        elsif klass_has_method?(klass, :logger)
-          klass.class_eval {remove_method :logger}
-        end
-      end
-      @overridees = []
+    def format(&block)
+      @formatter = block
+      self
     end
     
+    def rename(renames)
+      renames.each { |from, to| @rename_rules[tag_matcher(from)] = to }
+      self
+    end
+    
+    # should private, but used by ClassSpecificLogger
     def blocks_for(level, tag)
       blocks = []
       tag_aliases(tag) do |tag_alias|
@@ -49,8 +65,42 @@ module TaggedLogger
       blocks
     end
     
-    def init
-      rules {}
+    def patch_logger(patchee, replace_existing_logger)
+      return self if @patched.include?(patchee)
+      
+      if klass_has_method?(patchee, :logger)
+        return self if !replace_existing_logger
+        #so we could resurrect old :logger method if we need
+        patchee.class_eval { alias_method :tagged_logger_original_logger, :logger }
+      end
+      
+      @patched << patchee
+      
+      patchee.class_eval do
+        def logger
+          klass = self.class == Class ? self : self.class
+          result = klass.class_eval do
+            return @class_logger if @class_logger
+            @class_logger = ClassSpecificLogger.new(klass)
+            @class_logger
+          end
+          result
+        end
+      end
+      self
+    end
+    
+    private
+    def unpatch_all
+      @patched.each do |klass|
+        if klass_has_method?(klass, :tagged_logger_original_logger)
+          klass.class_eval {alias_method :logger, :tagged_logger_original_logger}
+        elsif klass_has_method?(klass, :logger)
+          klass.class_eval {remove_method :logger}
+        end
+      end
+      @patched = []
+      ObjectSpace.each_object(ClassSpecificLogger) { |obj| obj.detach }
     end
     
     def debug(what, where = {}, &block) output(:debug, what, where, &block) end
@@ -63,21 +113,12 @@ module TaggedLogger
         output(level, what, where, &block)
         end
     end
-    
-    def format(&block)
-      @formatter = block
-    end
 
     def formatter
       @formatter = lambda { |level, tag, message| "#{message}\n"} unless @formatter
       @formatter
     end
 
-    def rename(renames)
-      renames.each { |from, to| @rename_rules[tag_matcher(from)] = to }
-    end
-    
-    private
     def output(level, what, where, &block)
       logger = where[:to]
       code = nil
@@ -143,31 +184,6 @@ module TaggedLogger
       @tag_blocks.each do |matcher, block|
         yield block if matcher.match?(tag, level)
       end
-    end
-    
-    def inject_logger_method_in_call_chain(definee_klass)
-      return if @overridees.include?(definee_klass)
-      
-      if klass_has_method?(definee_klass, :logger)
-        return if !@options[:override]
-        #so we could resurrect old :logger method if we need
-        definee_klass.class_eval { alias_method :tagged_logger_original_logger, :logger }
-      end
-      
-      @overridees << definee_klass
-      
-      definee_klass.class_eval do
-        def logger
-          klass = self.class == Class ? self : self.class
-          result = klass.class_eval do
-            return @class_logger if @class_logger
-            @class_logger = ClassSpecificLogger.new(klass)
-            @class_logger
-          end
-          result
-        end
-      end
-      
     end
     
   end # class methods
