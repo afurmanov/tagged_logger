@@ -54,14 +54,14 @@ the following will happen:
 
 
 The *#logger()* returns some object having methods: *#debug(), #info(), #warn(), #error() and #fatal()*. 
-These methods have generated on first *#logger()* call and contain only necessary code to meet rules.
-It means, for example, that if no rules defined all these methods do nothing. It is done for performance
-reasons, I like to log a lot and I do not want calls like *#logger.debug()* slowing down production code.
+These methods have generated on first *#logger()* call and contain only necessary code to satisfy rules conditions.
+It means, for example, that if no rules defined all these methods do **nothing**. It is done for performance
+reasons, I like to log a lot and I do not want calls like *#logger.debug()* to slow down production code. 
  
 
 The simplest way to have a *#logger()* available everywhere without specifying any rules is:
 
-    TaggedLogger.init
+    TaggedLogger.rules
 
 No rules specified, therefore whenever you call *logger.debug()* (or alike) you actually paying for just an empty method
 execution. You may specify rules later, now you may stay focused on code you are writing.
@@ -78,7 +78,7 @@ If you are wondering what the heck the 'tag' is - the answer is simple. The tag 
 whose method calls *#logger()*. This is what allows to specify rules for classes or namespaces and this 
 is what the *tagged_logger* plugin is named after.
 
-Lets see how you may use it. For example you want to have separate log files 
+Lets see how you may use it. For example, you want to have separate log files 
 for classes *Network* and *Database*:
 
     TaggedLogger.rules do
@@ -92,7 +92,7 @@ In case you want to define common log for several classes:
       debug [Ftp, Http, Sockets], :to => Logger.new("network.log")
     end 
 
-Or if you want to have all these classes showing up under common 
+Or if you want to have all these classes to show up under common 
 tag *Network* in standard output:
 
     TaggedLogger.rules do
@@ -107,7 +107,7 @@ You may also use regular expressions in your rules:
     end
 
 
-There is more general form for rules, it accepts block with three params:
+There is more general form for rules, it accepts block with three parameters:
 
     TaggedLogger.rules do
       info /Whatever/ do |level, tag, message|
@@ -117,14 +117,23 @@ There is more general form for rules, it accepts block with three params:
 
 As previously explained the *tag* is a class name the *#logger* is being called from (except when you override Rails instrumentation, see below)
 
-## Integration with Rails (only Rails 3.0 supported at the moment, not completely tested):
+## Integration with Rails (only Rails 3.0 supported at the moment, not completely tested)
 
-Installation:
+### Installation
 
     $ gem install tagged_logger
 
-Rails has two facility for logging - *#logger* method injected in base classes such in ActiveRecord::Base and instrumentation. Instrumentation is somewhat which allows to issue an event upon execution of 
-block, for example:
+In Rails.root/config/application.rb:
+
+       TaggedLogger.config(:replace_existing_logger => true)
+
+Without that original methods *ActionController::Base#logger*, *ActiveRecord::Base#logger* and alike will remain untouched, and they have to be patched if we want
+redefine their behavior. 
+
+### Logging in Rails
+
+Rails has two facility for logging - *#logger* method injected in base classes (*ActiveRecord::Base*, *ActionController::Base*, etc.) and *instrumentation*. 
+Instrumentation in Rails allows to subscribe on event signaled upon block execution, for example:
 
     def sendfile(path, options={})
       ActiveSupport::Notifications.instrument("sendfile.action_controller") do
@@ -132,36 +141,35 @@ block, for example:
       end
     end
 
-The event *"sendfile.action_controller"* will be issued and one could subscribe to that event:
+The event *"sendfile.action_controller"* will be signaled after actual work on sending file is done. One could subscribe to that event:
 
-    ActiveSupport::Notifications.subscribe("sendfile.action_controller") do
-      #do something, for example log an event
+    ActiveSupport::Notifications.subscribe("sendfile.action_controller") do |*args|
+      event = ActiveSupport::Notifications::Event.new(*args)
+      #do something, for example, log an event
     end
 
+### Overriding Rails logging
+Logging inside Rails is done by log subscribers - their task to subscribe to instrumentation events, receive and log them.
+*TaggedLogger* allows you to override how these subscribers work, for example, 
+you could redirect what is being logged in *ActionController* to some external logging service, like [Logworm](http://www.logworm.com/):
 
-Actually Rails subscribers - they are responsible for majority of logging in Rails.
-*TaggedLogger* allows you to override how those subscribers do actual logging, for example if you want to override it for *ActionController*:
-
-    # "#{Rails.root}/config/initializers/tagged_logger.rb"
-    TaggedLogger.rules(:override=>true) do
-      debug "action_controller.instrumentation" do |level, tag, msg|
-        puts "#{tag} {msg}" #msg formed by ActionController::LogSubscriber goes here, tag is 'action_controller.instrumentation'
+    # In Rails.root/config/initializers/tagged_logger.rb:
+    TaggedLogger.rules do
+      debug "action_controller.logsubscriber" do |level, tag, msg|
+        Logworm::Logger.log(:controllers, :level => level.to_s, :tag => tag.to_s, :message => msg.to_s )
       end
     end
 
-If you like to have a special logging not only for *ActionController*, but rather for everything logged by Rails via instrumentation mechanism, you could use a 
+You may also use *active_record.logsubscriber*, *action_mailer.logsubscriber*, *action_view.logsubscriber* and *rack.logsubscriber* tags.
+If you'd like to have a special logging not only for *ActionController*, but rather for entire logging done in Rails (via instrumentation), you could use a 
 rule with regular expression:
    
-    debug /.*\.instrumentation$/ do |level, tag, msg|
-      #you special logging
+    debug /\.logsubscriber$/ do |level, tag, msg|
+      #your special logging
     end
 
 
-Since *#logger* is defined by Rails for classes you inherits from (*ActionController::Base*, *ActiveRecord::Base*), you have to initialize *TaggedLogger* with
-
-    :override => true 
-
- option since by default *TaggedLogger* is trying to be safe and does not override existing *#logger* method:
+You also could use *#logger* in your classes inherited from Rails bases and define your own logging rules, for example:
 
     class ApplicationController < ActionController::Base
       def welcome
@@ -169,13 +177,12 @@ Since *#logger* is defined by Rails for classes you inherits from (*ActionContro
       end
     end
   
-    # "#{Rails.root}/config/initializers/tagged_logger.rb"
-    TaggedLogger.rules(:override=>true) do
+    # Rails.root/config/initializers/tagged_logger.rb
+    TaggedLogger.rules do
       debug /.*Controller$/ do |level, tag, msg|
         puts "Here I dump whatever happens in controllers, including ApplicationController"
       end
     end
-
 
 
 ## License
