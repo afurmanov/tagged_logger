@@ -16,7 +16,6 @@ Gem::Specification.new do |s|
   s.add_development_dependency "shoulda"
   s.add_development_dependency "rr"
   s.add_development_dependency "rails", ">3.0.1"
-  s.add_development_dependency "capybara"
   s.files = Dir["[A-Z]*", "tagged_logger.rb", "{lib,test,examples}/**/*"]
 end
 
