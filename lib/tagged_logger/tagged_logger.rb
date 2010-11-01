@@ -195,6 +195,9 @@ module TaggedLogger
         eigenclass.send(:define_method, level) do |msg|
           blocks.each { |(tag_alias, block)| block.call(level, tag_alias, msg) }
         end
+        eigenclass.send(:define_method, "#{level}?".to_sym) do
+          !blocks.empty?
+        end
       end    
     end
     
