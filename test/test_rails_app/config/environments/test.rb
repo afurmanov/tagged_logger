@@ -1,3 +1,5 @@
+require 'test_logger'
+
 TestRailsApp::Application.configure do
   # Settings specified here will take precedence over those in config/environment.rb
 
@@ -32,5 +34,8 @@ TestRailsApp::Application.configure do
 
   # Print deprecation notices to the stderr
   config.active_support.deprecation = :stderr
+  config.colorize_logging = false
+  config.logger = TestLogger.instance
+  
   TaggedLogger.config(:replace_existing_logger => true)
 end

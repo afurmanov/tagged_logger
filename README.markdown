@@ -117,7 +117,7 @@ There is more general form for rules, it accepts block with three parameters:
 
 As previously explained the *tag* is a class name the *#logger* is being called from (except when you override Rails instrumentation, see below)
 
-## Integration with Rails (only Rails 3.0 supported at the moment, not completely tested)
+## Integration with Rails (only Rails 3.0 supported at the moment)
 
 ### Installation
 
