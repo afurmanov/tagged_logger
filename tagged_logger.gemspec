@@ -4,7 +4,7 @@ $:.unshift lib unless $:.include?(lib)
 
 Gem::Specification.new do |s|
   s.name        = "tagged_logger"
-  s.version     = "0.5.1"
+  s.version     = "0.5.5"
   s.platform    = Gem::Platform::RUBY
   s.authors     = ["Aleksandr Furmanov"]
   s.email       = ["aleksandr.furmanov@gmail.com"]
