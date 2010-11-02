@@ -1,5 +1,3 @@
-### ActiveResource::LogSubscriber instrumentation
-### Tests for Rails instrumentation
 ### Refactor TagMatcher#match? with ===
 ### Documentation
 
