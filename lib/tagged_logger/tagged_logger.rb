@@ -1,10 +1,9 @@
 require 'delegate'
-require 'hashery/dictionary'
 
 module TaggedLogger
   
-  @rename_rules = Dictionary.new
-  @tag_blocks = Dictionary.new
+  @rename_rules = {}
+  @tag_blocks = {}
   @patched = []
   @formatter = nil
   @config = {}
@@ -29,8 +28,8 @@ module TaggedLogger
 
     def reset
       unpatch_all
-      @rename_rules = Dictionary.new
-      @tag_blocks = Dictionary.new
+      @rename_rules = {}
+      @tag_blocks = {}
       @formatter = nil
       @config = {}
       self
